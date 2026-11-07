@@ -1,17 +1,17 @@
 # Maintainer: Ammar Hossain <ammar@butterfly.so>
 pkgname=pond-grub-config
-pkgver=0.1.1
+pkgver=0.1.2
 pkgrel=1
 pkgdesc='Pond GRUB configuration, theme and menu integration'
 arch=('any')
 url='https://github.com/bflycomputer/pond-interface'
 license=('BSD-3-Clause' 'OFL-1.1')
 depends=('grub' 'os-prober')
-_commit=f82fa52dcc6a48c4b887c95fd44f03f98080ca6b
+_commit=1aa5f4a76692bd9281c3eed9b2012f505bc80eed
 source=("pond-interface-$_commit.tar.gz::$url/archive/$_commit.tar.gz"
         'pond-grub.hook'
         'pond-grub-update')
-sha256sums=('06f266f97c6b880d5d7df6532a3cccbd112e373a8c9b01696dbb2c1fad66580e'
+sha256sums=('8ad7acd934f7d9d4bb29550bf0b2a7e3c4402db10eb6492bed402a4b48da2044'
             '4bc2609cd458a46d99f2c17f41dbcc9261d5d948de1363d0196e64a3fc20a377'
             '96a677eeac179484c1c0c6611d4c2ef1dd728078893bc84c792b8653f69883fe')
 
