@@ -229,6 +229,7 @@ package() {
     rm -f "${pkgdir}/usr/lib/grub/${i}"/*.image
     rm -f "${pkgdir}/usr/lib/grub/${i}"/{kernel.exec,gdb_grub,gmodule.pl}
   done
+  rm "${pkgdir}/etc/grub.d/25_bli"
   echo "Install /etc/default/grub (used by grub-mkconfig)..."
   install -D -m0644 "${srcdir}/grub.default" "${pkgdir}/etc/default/grub"
   sed -e "s/%PKGVER%/${epoch}:${pkgver}-${pkgrel}/" < "${srcdir}/sbat.csv" > "${pkgdir}/usr/share/grub/sbat.csv"
