@@ -13,7 +13,7 @@ pkgver=${_pkgver/-/}
 pkgrel=1
 url='https://gnu-grub.freedesktop.org/'
 arch=('x86_64')
-license=('GPL-3.0-or-later')
+license=('GPL-3.0-or-later' 'OFL-1.1')
 backup=(
   etc/default/grub
   etc/grub.d/40_custom
@@ -93,6 +93,8 @@ source=(
   '0003-support-dropins-for-default-configuration.patch'
   'grub.default'
   'sbat.csv'
+  'onest-21.pf2'
+  'OFL-Onest.txt'
 )
 b2sums=('cf40f930d92ba79ee8ad1facb774ead1d899ea77b44fcd46d646580af499ad1917e2fccb47eeaf0d75cb70933c29fd9aa922914440427e60763c79bf14b2d268'
         'SKIP'
@@ -104,7 +106,9 @@ b2sums=('cf40f930d92ba79ee8ad1facb774ead1d899ea77b44fcd46d646580af499ad1917e2fcc
         'b4cd9ac976a579eca19d54c0b31c8d6324525fe5a0b9f5405deb63845367ac1adaa80ece4c166dfd5304608c41aa44b4f64efe235c03f437523b993be06e06e3'
         'a7820bfe9bddc34af49de63222b3d2a9788367083e29db13b33120269adbfa1619ac421d8597f662f756592889f5cc5538544a17d9936d1420bd5742282c710c'
         '2e6fe545573aef1af64ee46ee251b10bf3baf38d117c6d33a4dddc1413cf6ac934ec16990bdf304558f372ba415e9c7e6d39d245aeffb31c28bc545f4eddb86a'
-        'aedf287655c9d866e47e8a9c1d98df7a392f270ff805058fe8dd139c1fed664aadbb5a096c847ef26a4aa0b3ac6e62ee5ad0b6241e3f2b2ec776c33e72e07352')
+        'aedf287655c9d866e47e8a9c1d98df7a392f270ff805058fe8dd139c1fed664aadbb5a096c847ef26a4aa0b3ac6e62ee5ad0b6241e3f2b2ec776c33e72e07352'
+        'c8e351f9127be6ec91418fd1587ec5fbeeb68634c258146ade24f6f88498f4b0a198eb16ac21070ecc4d7d240869eeb302e1ca2079ad587a9891c111db9d9293'
+        '0a3937fab03c3bfe99c4e69665f4de105c9912cccefa23052c3f262f173fd830fde1997bd63ba4c346200ce213dff501089c89fd45d04f24564bbc110661fbf4')
 
 _backports=(
 )
@@ -191,6 +195,15 @@ _platform=(
 # disable cross-compilation when building for aarch64
 [[ $CARCH == "aarch64" ]] && _platform=(aarch64-efi)
 
+_efi_modules=(
+  normal configfile echo test search linux chain efifwsetup loadenv
+  efibootnext reboot
+  part_gpt part_msdos fat btrfs ext2
+  gfxterm gfxmenu png font efi_gop all_video
+  memdisk tar
+  search_fs_uuid boot gzio gettext terminal
+)
+
 build() {
   for i in ${_platform[@]}; do
     echo "Unset CFLAGS for build..."
@@ -233,4 +246,23 @@ package() {
   echo "Install /etc/default/grub (used by grub-mkconfig)..."
   install -D -m0644 "${srcdir}/grub.default" "${pkgdir}/etc/default/grub"
   sed -e "s/%PKGVER%/${epoch}:${pkgver}-${pkgrel}/" < "${srcdir}/sbat.csv" > "${pkgdir}/usr/share/grub/sbat.csv"
+  install -D -m0644 "${srcdir}/OFL-Onest.txt" "${pkgdir}/usr/share/licenses/${pkgname}/OFL-Onest.txt"
+
+  echo "Build the EFI image..."
+  rm -rf "${srcdir}/memdisk"
+  # 00_header loads the terminal font by the name "unicode"
+  install -D -m0644 "${pkgdir}/usr/share/grub/euro.pf2" "${srcdir}/memdisk/fonts/unicode.pf2"
+  install -D -m0644 "${srcdir}/onest-21.pf2" "${srcdir}/memdisk/fonts/onest-21.pf2"
+  tar --sort=name --owner=0 --group=0 --numeric-owner --mtime="@${SOURCE_DATE_EPOCH}" \
+    -C "${srcdir}/memdisk" -cf "${srcdir}/memdisk.tar" fonts
+  install -d -m0755 "${pkgdir}/usr/lib/grub/x86_64-efi/monolithic"
+  # -m must come before -p: -m resets the prefix to (memdisk)/boot/grub
+  "${pkgdir}/usr/bin/grub-mkimage" \
+    -O x86_64-efi \
+    -d "${pkgdir}/usr/lib/grub/x86_64-efi" \
+    -m "${srcdir}/memdisk.tar" \
+    -p /EFI/pond \
+    --sbat "${pkgdir}/usr/share/grub/sbat.csv" \
+    -o "${pkgdir}/usr/lib/grub/x86_64-efi/monolithic/grubx64.efi" \
+    "${_efi_modules[@]}"
 }
