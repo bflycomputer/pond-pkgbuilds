@@ -245,6 +245,47 @@ Upstream-URL: https://redirect.github.com/$upstream_repository/commit/$upstream_
     "$upstream_commit" "$pond_path" "$(git rev-parse HEAD)"
 }
 
+# Export the merged recipe's kernel version so patch changes appear in the PR.
+refresh_kernel_patches() {
+  local pond_path="$1"
+  local recipe="$1/PKGBUILD"
+  local tag kernel_git scratch report_file status=0
+
+  tag="cachyos-$(sed -n 's/^_major=//p' "$recipe").$(sed -n 's/^_minor=//p' "$recipe")-$(sed -n 's/^_tagrel=//p' "$recipe")"
+  [[ "$tag" =~ ^cachyos-[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$ ]] || {
+    printf 'unexpected kernel version in %s: %s\n' "$recipe" "$tag" >&2
+    return 1
+  }
+
+  # Fetch blobs on demand to avoid downloading the entire kernel tree.
+  kernel_git="${POND_KERNEL_GIT_DIR:-${RUNNER_TEMP:-/tmp}/cachyos-linux.git}"
+  if [[ -d "$kernel_git" ]]; then
+    git --git-dir="$kernel_git" fetch --quiet --no-tags --filter=blob:none origin \
+      "refs/tags/$tag:refs/tags/$tag" || return 1
+  else
+    git clone --quiet --bare --filter=blob:none --no-tags --single-branch --branch "$tag" \
+      https://github.com/CachyOS/linux.git "$kernel_git" || return 1
+  fi
+
+  scratch="$(mktemp -d)"
+  report_file="$scratch/report.md"
+  python3 "$(dirname "${BASH_SOURCE[0]}")/export-kernel-patches.py" \
+    --git-dir "$kernel_git" --tag "$tag" --package-dir "$pond_path" --report "$report_file" \
+    --verify-base https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git || status=$?
+  if ((status > 1)) || [[ ! -s "$report_file" ]]; then
+    rm -rf "$scratch"
+    return 1
+  fi
+  ((status == 0)) || sync_review+="$pond_path kernel patches (see NEEDS ATTENTION in the report below)"$'\n'
+  # Leave room for the rest of the PR body within GitHub's 65,536-character limit.
+  kernel_report="$(head -c 50000 "$report_file")"
+  rm -rf "$scratch"
+
+  # Patches are read from the checkout, outside makepkg's source checksums.
+  git add -A -- "$pond_path/patches" || return 1
+  git diff --cached --quiet || git commit --quiet -m "$pond_path: refresh CachyOS kernel patches for $tag" || return 1
+}
+
 sync_package() {
   local upstream_path="$1"
   local pond_path="$2"
@@ -255,6 +296,7 @@ sync_package() {
   local body_file
   local upstream_commits
   local sync_review=''
+  local kernel_report=''
 
   cursor="$(last_upstream_commit "$pond_path")"
   git cat-file -e "$cursor^{commit}" 2>/dev/null || {
@@ -291,6 +333,10 @@ sync_package() {
     apply_upstream_commit "$upstream_commit" "$upstream_path" "$pond_path" || return 1
   done
 
+  if [[ -f "$pond_path/patches/cachyos/rules" ]]; then
+    refresh_kernel_patches "$pond_path" || return 1
+  fi
+
   if git diff --quiet "origin/$branch" HEAD; then
     printf '%s has no resulting Pond changes.\n' "$pond_path"
     return 0
@@ -308,6 +354,9 @@ sync_package() {
     if [[ -n "$sync_review" ]]; then
       printf '\nSome changes need conflict resolution or checksum regeneration:\n\n'
       printf '%s' "$sync_review" | sort -u | sed 's/^/- /'
+    fi
+    if [[ -n "$kernel_report" ]]; then
+      printf '\n%s\n' "$kernel_report"
     fi
   } >"$body_file"
 

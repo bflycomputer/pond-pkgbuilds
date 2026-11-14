@@ -1,0 +1,30 @@
+From: Eric Naim <dnaim@cachyos.org>
+Date: Wed, 25 Mar 2026 04:00:53 +0800
+Subject: CACHY: mm/vmscan: Increase vm_swappiness to 100
+CachyOS-Branch: cachy
+
+# vm.swappiness is simply a ratio of how costly reclaiming and refaulting
+# anonymous memory is compared to file memory for your hardware and workload.
+#
+# For SSDs, swapping or dropping filesystem caches basically have the same cost,
+# so a middle value like 100 may work well. Keep the default value 60 for
+# !CONFIG_CACHY as HDDs are still prevalent in servers for storage.
+#
+# Signed-off-by: Eric Naim <dnaim@cachyos.org>
+---
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 6a53762d5544..cd2879854be9 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -198,7 +198,11 @@ struct scan_control {
+ /*
+  * From 0 .. MAX_SWAPPINESS.  Higher means more swappy.
+  */
++#ifdef CONFIG_CACHY
++int vm_swappiness = 100;
++#else
+ int vm_swappiness = 60;
++#endif
+ 
+ static int sc_swappiness(struct scan_control *sc, struct mem_cgroup *memcg)
+ {

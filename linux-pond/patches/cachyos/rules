@@ -1,0 +1,70 @@
+# Export rules: unmatched commits are kept; 'keep' overrides exclusions.
+#
+#   drop-branch <name>   Exclude a topic branch.
+#   drop <glob>          Exclude matching commit subjects.
+#   keep <glob>          Retain matching commit subjects.
+
+# Mac and T2 support.
+drop-branch t2
+# Mainline backport: 6f88e6ebdc1a.
+keep wifi: brcmfmac: Improve D3 substate entering timeout handling
+
+# BBRv3.
+drop-branch bbr3
+
+# Samsung Galaxy Book speaker support.
+drop-branch snd-codecs
+
+# ADIOS I/O scheduler.
+drop linux*-ADIOS-*
+drop iosched-*: update ADIOS to *
+drop fixup! iosched-*: update ADIOS to *
+# Depends on the excluded ADIOS changes.
+drop CACHY: Use BFQ for SQ devices and mq-deadline for MQ devices
+
+# VHBA virtual SCSI adapter (CDEmu).
+drop scsi: Add VHBA driver
+
+# Intel remapped NVMe driver.
+drop PCI: Add Intel remapped NVMe device support
+
+# TSC series.
+drop x86: implement tsc=directsync for systems without IA32_TSC_ADJUST
+drop x86: touch clocksource watchdog after syncing TSCs
+drop x86: save/restore TSC counter value during sleep/wake
+drop x86: only restore TSC if we have IA32_TSC_ADJUST or directsync enabled
+drop x86: don't check for random warps if using direct sync
+drop x86: revert extra time added to check for tsc wraps
+
+# Fixed DSC rate from EDID.
+drop drm/edid: rename VESA block parsing functions to more generic name
+drop drm/edid: prepare for VESA vendor-specific data block extension
+drop drm/edid: MSO should only be used for non-eDP displays
+drop drm/edid: parse DSC DPP passthru support flag for mode VII timings
+drop drm/edid: for consistency, use mask everywhere for block rev parsing
+drop drm/edid: parse DRM VESA dsc bpp target
+drop drm/amd: use fixed dsc bits-per-pixel from edid
+
+# zram rework: CachyOS dropped it in 7.4.
+drop zram: prefix backends printk-s
+drop zram: remove debugfs entry on init failure
+drop zram: zstd: do not allocate empty C/D-dictionaries
+drop zram: lz4hc: pre-initialize dictionary stream in setup_params
+drop zram: lz4: use LZ4_decompress_safe_usingDict()
+drop zram: lz4hc: use LZ4_decompress_safe_usingDict()
+drop zram: zstd: do not use kvzalloc() for zstd allocations
+drop zram: reset writeback state in zram_reset_device()
+drop zram: split zcomp into separate R/W streams
+drop zram: use a singleton compression context for recompression
+drop zram: use rw_semaphore for decompression streams
+
+# Passive VRR: CachyOS dropped it in 7.4.
+drop drm: Add passive_vrr properties for passive/desktop VRR
+drop drm/amd/display: Use passive_vrr properties in amdgpu
+drop drm/amd/display: Keep FreeSync for HF-VSDB VRR sinks in MCCS fallback
+
+# Exclude both the POC selector and its revert.
+drop *poc-selector*
+
+# CachyOS release tooling; unused by Pond builds.
+drop tag-release*

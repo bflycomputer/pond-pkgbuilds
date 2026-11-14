@@ -1,0 +1,40 @@
+From: Eric Naim <dnaim@cachyos.org>
+Date: Mon, 31 Aug 2026 20:52:41 +0800
+Subject: mm/swap_state: Disable swap-in readahead
+CachyOS-Branch: cachy
+
+# CachyOS is currently using ZRAM everywhere by default (desktops and
+# servers). Compressed pages are not next to each other in ZRAM, i.e. they
+# have no locality, so the swap cache is polluted with extra pages when we
+# only want 1.
+#
+# Disable swap-in readahead to optimize ZRAM usage.
+#
+# Link: https://chrisdown.name/2026/03/24/zswap-vs-zram-when-to-use-what.html
+# Link: https://issues.chromium.org/issues/41028506
+# Signed-off-by: Eric Naim <dnaim@cachyos.org>
+---
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 0d9b0d876b56..046157fe5202 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -1031,17 +1031,8 @@ static const struct ctl_table swap_readahead_sysctl_table[] = {
+ 
+ static void __init swap_readahead_setup(void)
+ {
+-	unsigned long megs = PAGES_TO_MB(totalram_pages());
+-
+-	/* Use a smaller cluster for small-memory machines */
+-	if (megs < 16)
+-		page_cluster = 2;
+-	else
+-		page_cluster = 3;
+-	/*
+-	 * Right now other parts of the system means that we
+-	 * _really_ don't want to cluster much more
+-	 */
++	/* Only swap-in pages requested, avoid readahead */
++	page_cluster = 0;
+ 
+ 	register_sysctl_init("vm", swap_readahead_sysctl_table);
+ }

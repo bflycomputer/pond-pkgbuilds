@@ -1,0 +1,27 @@
+From: Sultan Alsawaf <sultan@kerneltoast.com>
+Date: Sat, 24 Oct 2020 22:17:49 -0700
+Subject: CACHY: Disable proactive compaction by default
+CachyOS-Branch: cachy
+
+# On-demand compaction works fine assuming that you don't have a need to
+# spam the page allocator nonstop for large order page allocations.
+#
+# Signed-off-by: Sultan Alsawaf <sultan@kerneltoast.com>
+# Signed-off-by: Eric Naim <dnaim@cachyos.org>
+---
+diff --git a/mm/compaction.c b/mm/compaction.c
+index a049415512c6..d9bb55c5623c 100644
+--- a/mm/compaction.c
++++ b/mm/compaction.c
+@@ -1933,7 +1933,11 @@ static int sysctl_compact_unevictable_allowed __read_mostly = CONFIG_COMPACT_UNE
+  * aggressively the kernel should compact memory in the
+  * background. It takes values in the range [0, 100].
+  */
++#ifdef CONFIG_CACHY
++static unsigned int __read_mostly sysctl_compaction_proactiveness;
++#else
+ static unsigned int __read_mostly sysctl_compaction_proactiveness = 20;
++#endif
+ static int sysctl_extfrag_threshold = 500;
+ static int __read_mostly sysctl_compact_memory;
+ 

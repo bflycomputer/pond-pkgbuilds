@@ -1,0 +1,23 @@
+From: Eric Naim <dnaim@cachyos.org>
+Date: Wed, 25 Mar 2026 03:53:14 +0800
+Subject: mm: Increase VM_READAHEAD_PAGES to 256K
+CachyOS-Branch: cachy
+
+# Double VM_READAHEAD_PAGES from the default 128K to increase throughput
+# but not so much as it harms latency.
+#
+# Signed-off-by: Eric Naim <dnaim@cachyos.org>
+---
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index 0adfa6605653..5fac5f37867c 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -1426,7 +1426,7 @@ struct readahead_control {
+ 		._index = i,						\
+ 	}
+ 
+-#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
++#define VM_READAHEAD_PAGES	(SZ_256K / PAGE_SIZE)
+ 
+ void page_cache_ra_unbounded(struct readahead_control *,
+ 		unsigned long nr_to_read, unsigned long lookahead_count);

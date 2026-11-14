@@ -1,0 +1,89 @@
+From: Peter Jung <admin@ptr1337.dev>
+Date: Sun, 1 Nov 2026 09:36:39 +0100
+Subject: HID: logitech-hidpp: read G920 force feedback config before hid_connect()
+CachyOS-Branch: fixes
+
+# Commit 544315e40172 ("HID: logitech-hidpp: move FF initialization to
+# .input_configured()") moved g920_get_config() into
+# hidpp_input_configured(). That callback runs from hid_connect(), and
+# hidpp_probe() calls hid_device_io_stop() just before hid_connect().
+# hid_input_report() therefore drops the device's replies while
+# .input_configured() runs. Every HID++ command in g920_get_config() times
+# out, and force feedback never gets set up:
+#
+#   logitech-hidpp-device 0003:046D:C26E.0006: Unable to initialize force feedback support, errno -110
+#
+# Read the force feedback config in probe() while IO is still enabled,
+# and keep hidpp_ff_init() in .input_configured(). hidpp_ff_init() does
+# not talk to the device, so FF is still set up before the input device
+# is registered, which is what the commit above intended.
+#
+# Link: https://github.com/CachyOS/linux-cachyos/issues/1105
+# Fixes: 544315e40172 ("HID: logitech-hidpp: move FF initialization to .input_configured()")
+# Signed-off-by: Peter Jung <admin@ptr1337.dev>
+---
+diff --git a/drivers/hid/hid-logitech-hidpp.c b/drivers/hid/hid-logitech-hidpp.c
+index 9646380febac..4269ca8bafc3 100644
+--- a/drivers/hid/hid-logitech-hidpp.c
++++ b/drivers/hid/hid-logitech-hidpp.c
+@@ -214,6 +214,8 @@ struct hidpp_device {
+ 	int hires_wheel_multiplier;
+ 	u8 hires_wheel_feature_index;
+ 
++	struct hidpp_ff_private_data *ff_config;
++
+ 	bool connected_once;
+ };
+ 
+@@ -4093,19 +4095,16 @@ static int hidpp_input_configured(struct hid_device *hdev, struct hid_input *hid
+ 		return 0;
+ 
+ 	if (hidpp->quirks & HIDPP_QUIRK_CLASS_G920) {
+-		struct hidpp_ff_private_data data;
+-
+ 		if (!list_is_first(&hidinput->list, &hdev->inputs))
+ 			return 0;
+ 
+-		ret = g920_get_config(hidpp, &data);
+-		if (!ret)
+-			ret = hidpp_ff_init(hidpp, &data);
+-
+-		if (ret) {
+-			hid_warn(hidpp->hid_dev,
+-				 "Unable to initialize force feedback support, errno %d\n",
+-				 ret);
++		/* The config was read in probe(), IO is stopped here */
++		if (hidpp->ff_config) {
++			ret = hidpp_ff_init(hidpp, hidpp->ff_config);
++			if (ret)
++				hid_warn(hidpp->hid_dev,
++					 "Unable to initialize force feedback support, errno %d\n",
++					 ret);
+ 		}
+ 	}
+ 
+@@ -4764,6 +4763,24 @@ static int hidpp_probe(struct hid_device *hdev, const struct hid_device_id *id)
+ 	if (hidpp->quirks & HIDPP_QUIRK_DELAYED_INIT)
+ 		connect_mask &= ~HID_CONNECT_HIDINPUT;
+ 
++	/*
++	 * Force feedback is set up from .input_configured(), which runs from
++	 * hid_connect() with IO stopped, so the device's replies cannot be
++	 * received there. Read the config while IO is still enabled.
++	 */
++	if (hidpp->quirks & HIDPP_QUIRK_CLASS_G920) {
++		struct hidpp_ff_private_data *data;
++
++		data = devm_kzalloc(&hdev->dev, sizeof(*data), GFP_KERNEL);
++		ret = data ? g920_get_config(hidpp, data) : -ENOMEM;
++		if (ret)
++			hid_warn(hdev,
++				 "Unable to initialize force feedback support, errno %d\n",
++				 ret);
++		else
++			hidpp->ff_config = data;
++	}
++
+ 	/* Now export the actual inputs and hidraw nodes to the world */
+ 	hid_device_io_stop(hdev);
+ 	ret = hid_connect(hdev, connect_mask);
