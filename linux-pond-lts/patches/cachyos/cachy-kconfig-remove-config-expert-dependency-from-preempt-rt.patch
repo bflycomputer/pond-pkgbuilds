@@ -1,0 +1,24 @@
+From: Vasiliy Stelmachenok <ventureo@yandex.ru>
+Date: Tue, 31 Oct 2023 11:04:44 +0300
+Subject: Kconfig: Remove CONFIG_EXPERT dependency from PREEMPT_RT
+CachyOS-Branch: cachy
+
+# It's just a headache to have a bunch of garbage in your config for the
+# sake of enabling one option. It makes it much easier to keep our config
+# and maintain it relative to other cachy kernels.
+#
+# Signed-off-by: Eric Naim <dnaim@cachyos.org>
+---
+diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
+index da326800c1c9..cf5267cac7bb 100644
+--- a/kernel/Kconfig.preempt
++++ b/kernel/Kconfig.preempt
+@@ -88,7 +88,7 @@ endchoice
+ 
+ config PREEMPT_RT
+ 	bool "Fully Preemptible Kernel (Real-Time)"
+-	depends on EXPERT && ARCH_SUPPORTS_RT && !COMPILE_TEST
++	depends on ARCH_SUPPORTS_RT && !COMPILE_TEST
+ 	select PREEMPTION
+ 	help
+ 	  This option turns the kernel into a real-time kernel by replacing

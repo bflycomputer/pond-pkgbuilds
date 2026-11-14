@@ -1,0 +1,24 @@
+From: Peter Jung <admin@ptr1337.dev>
+Date: Mon, 22 Jan 2024 15:21:12 +0100
+Subject: Cachy: Migrate
+CachyOS-Branch: cachy
+
+# Instead of increasing the number of tasks that migrate at once, migrate
+# the amount acceptable for PREEMPT_RT, but reduce the cost so migrations
+# occur more often.
+#
+# Signed-off-by: Peter Jung <admin@ptr1337.dev>
+---
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index 0f29def72877..79e68597d5db 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -2814,7 +2814,7 @@ extern void deactivate_task(struct rq *rq, struct task_struct *p, int flags);
+ 
+ extern void wakeup_preempt(struct rq *rq, struct task_struct *p, int flags);
+ 
+-#ifdef CONFIG_PREEMPT_RT
++#if defined(CONFIG_PREEMPT_RT) || defined(CONFIG_CACHY)
+ # define SCHED_NR_MIGRATE_BREAK 8
+ #else
+ # define SCHED_NR_MIGRATE_BREAK 32

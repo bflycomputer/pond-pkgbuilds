@@ -1,0 +1,47 @@
+From: Denis Benato <denis.benato@linux.dev>
+Date: Mon, 12 Jan 2026 22:50:36 +0100
+Subject: platform/x86: asus-armoury: add support for GV302XV
+CachyOS-Branch: asus
+
+# Add TDP data for laptop model GV302XV.
+#
+# Signed-off-by: Denis Benato <denis.benato@linux.dev>
+---
+diff --git a/drivers/platform/x86/asus-armoury.h b/drivers/platform/x86/asus-armoury.h
+index bc8fb54c4af0..5bcb7d266604 100644
+--- a/drivers/platform/x86/asus-armoury.h
++++ b/drivers/platform/x86/asus-armoury.h
+@@ -1251,6 +1251,33 @@ static const struct dmi_system_id power_limits[] = {
+ 			},
+ 		},
+ 	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_NAME, "GV302XV"),
++		},
++		.driver_data = &(struct power_data) {
++			.ac_data = &(struct power_limits) {
++				.ppt_pl1_spl_min = 15,
++				.ppt_pl1_spl_max = 55,
++				.ppt_pl2_sppt_min = 25,
++				.ppt_pl2_sppt_max = 60,
++				.ppt_pl3_fppt_min = 35,
++				.ppt_pl3_fppt_max = 65,
++				.nv_temp_target_min = 75,
++				.nv_temp_target_max = 87,
++			},
++			.dc_data = &(struct power_limits) {
++				.ppt_pl1_spl_min = 15,
++				.ppt_pl1_spl_max = 35,
++				.ppt_pl2_sppt_min = 25,
++				.ppt_pl2_sppt_max = 35,
++				.ppt_pl3_fppt_min = 35,
++				.ppt_pl3_fppt_max = 65,
++				.nv_temp_target_min = 75,
++				.nv_temp_target_max = 87,
++			},
++		},
++	},
+ 	{
+ 		.matches = {
+ 			DMI_MATCH(DMI_BOARD_NAME, "GV601R"),

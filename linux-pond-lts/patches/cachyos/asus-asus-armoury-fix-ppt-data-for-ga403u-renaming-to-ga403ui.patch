@@ -1,0 +1,27 @@
+From: Denis Benato <denis.benato@linux.dev>
+Date: Sat, 3 Jan 2026 01:37:30 +0100
+Subject: asus-armoury: fix ppt data for GA403U* renaming to GA403UI
+CachyOS-Branch: asus
+
+# As some GA403U may have different limits restrict the DMI match to the
+# specific GA403UI model.
+#
+# Fixes: 39ae6c50e599 ("platform/x86: asus-armoury: add ppt_* and nv_* tuning knobs")
+# Signed-off-by: Denis Benato <denis.benato@linux.dev>
+# Link: https://patch.msgid.link/20260103003731.404383-3-denis.benato@linux.dev
+# Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+# Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+---
+diff --git a/drivers/platform/x86/asus-armoury.h b/drivers/platform/x86/asus-armoury.h
+index e06881fb86ae..edd37486f71f 100644
+--- a/drivers/platform/x86/asus-armoury.h
++++ b/drivers/platform/x86/asus-armoury.h
+@@ -843,7 +843,7 @@ static const struct dmi_system_id power_limits[] = {
+ 	},
+ 	{
+ 		.matches = {
+-			DMI_MATCH(DMI_BOARD_NAME, "GA403U"),
++			DMI_MATCH(DMI_BOARD_NAME, "GA403UI"),
+ 		},
+ 		.driver_data = &(struct power_data) {
+ 			.ac_data = &(struct power_limits) {

@@ -1,0 +1,184 @@
+From: Peter Jung <admin@ptr1337.dev>
+Date: Mon, 13 Nov 2023 13:21:27 +0100
+Subject: Cachy: Tweaks
+CachyOS-Branch: cachy
+
+# This adds several tweaks for the Scheduler, dm oops, swap and vmscan.c
+#
+# Signed-off-by: Peter Jung <admin@ptr1337.dev>
+# Signed-off-by: Eric Naim <dnaim@cachyos.org>
+---
+diff --git a/include/linux/pagemap.h b/include/linux/pagemap.h
+index 09b581c1d878..35437d521dad 100644
+--- a/include/linux/pagemap.h
++++ b/include/linux/pagemap.h
+@@ -1347,7 +1347,7 @@ struct readahead_control {
+ 		._index = i,						\
+ 	}
+ 
+-#define VM_READAHEAD_PAGES	(SZ_128K / PAGE_SIZE)
++#define VM_READAHEAD_PAGES	(SZ_8M / PAGE_SIZE)
+ 
+ void page_cache_ra_unbounded(struct readahead_control *,
+ 		unsigned long nr_to_read, unsigned long lookahead_count);
+diff --git a/init/Kconfig b/init/Kconfig
+index 1858e55bfd7c..25e96052b130 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -195,6 +195,10 @@ config THREAD_INFO_IN_TASK
+ 
+ menu "General setup"
+ 
++config CACHY
++    bool "Some kernel tweaks by CachyOS"
++    default y
++
+ config BROKEN
+ 	bool
+ 	help
+diff --git a/kernel/Kconfig.hz b/kernel/Kconfig.hz
+index ce1435cb08b1..e1359db5561e 100644
+--- a/kernel/Kconfig.hz
++++ b/kernel/Kconfig.hz
+@@ -40,6 +40,27 @@ choice
+ 	 on SMP and NUMA systems and exactly dividing by both PAL and
+ 	 NTSC frame rates for video and multimedia work.
+ 
++	config HZ_500
++		bool "500 HZ"
++	help
++	 500 Hz is a balanced timer frequency. Provides fast interactivity
++	 on desktops with good smoothness without increasing CPU power
++	 consumption and sacrificing the battery life on laptops.
++
++	config HZ_600
++		bool "600 HZ"
++	help
++	 600 Hz is a balanced timer frequency. Provides fast interactivity
++	 on desktops with good smoothness without increasing CPU power
++	 consumption and sacrificing the battery life on laptops.
++
++	config HZ_750
++		bool "750 HZ"
++	help
++	 750 Hz is a balanced timer frequency. Provides fast interactivity
++	 on desktops with good smoothness without increasing CPU power
++	 consumption and sacrificing the battery life on laptops.
++
+ 	config HZ_1000
+ 		bool "1000 HZ"
+ 	help
+@@ -53,6 +74,9 @@ config HZ
+ 	default 100 if HZ_100
+ 	default 250 if HZ_250
+ 	default 300 if HZ_300
++	default 500 if HZ_500
++	default 600 if HZ_600
++	default 750 if HZ_750
+ 	default 1000 if HZ_1000
+ 
+ config SCHED_HRTICK
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index 67e8c2065d82..0f8daa7e629f 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -76,10 +76,19 @@ unsigned int sysctl_sched_tunable_scaling = SCHED_TUNABLESCALING_LOG;
+  *
+  * (default: 0.70 msec * (1 + ilog(ncpus)), units: nanoseconds)
+  */
++#ifdef CONFIG_CACHY
++unsigned int sysctl_sched_base_slice			= 350000ULL;
++static unsigned int normalized_sysctl_sched_base_slice	= 350000ULL;
++#else
+ unsigned int sysctl_sched_base_slice			= 700000ULL;
+ static unsigned int normalized_sysctl_sched_base_slice	= 700000ULL;
++#endif /* CONFIG_CACHY */
+ 
++#ifdef CONFIG_CACHY
++__read_mostly unsigned int sysctl_sched_migration_cost	= 300000UL;
++#else
+ __read_mostly unsigned int sysctl_sched_migration_cost	= 500000UL;
++#endif
+ 
+ static int __init setup_sched_thermal_decay_shift(char *str)
+ {
+@@ -122,8 +131,12 @@ int __weak arch_asym_cpu_priority(int cpu)
+  *
+  * (default: 5 msec, units: microseconds)
+  */
++#ifdef CONFIG_CACHY
++static unsigned int sysctl_sched_cfs_bandwidth_slice		= 3000UL;
++#else
+ static unsigned int sysctl_sched_cfs_bandwidth_slice		= 5000UL;
+ #endif
++#endif
+ 
+ #ifdef CONFIG_NUMA_BALANCING
+ /* Restrict the NUMA promotion throughput (MB/s) for each target node. */
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 757bc4d3b5b5..2b3ab677d1f8 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -72,7 +72,11 @@ static long ratelimit_pages = 32;
+ /*
+  * Start background writeback (via writeback threads) at this percentage
+  */
++#ifdef CONFIG_CACHY
++static int dirty_background_ratio = 5;
++#else
+ static int dirty_background_ratio = 10;
++#endif
+ 
+ /*
+  * dirty_background_bytes starts at 0 (disabled) so that it is a function of
+@@ -100,7 +104,11 @@ static unsigned long vm_dirty_bytes;
+ /*
+  * The interval between `kupdate'-style writebacks
+  */
++#ifdef CONFIG_CACHY
++unsigned int dirty_writeback_interval = 10 * 100; /* centiseconds */
++#else
+ unsigned int dirty_writeback_interval = 5 * 100; /* centiseconds */
++#endif
+ 
+ EXPORT_SYMBOL_GPL(dirty_writeback_interval);
+ 
+diff --git a/mm/swap.c b/mm/swap.c
+index 2260dcd2775e..bc24155a3156 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -1101,6 +1101,10 @@ static const struct ctl_table swap_sysctl_table[] = {
+  */
+ void __init swap_setup(void)
+ {
++#ifdef CONFIG_CACHY
++	/* Only swap-in pages requested, avoid readahead */
++	page_cluster = 0;
++#else
+ 	unsigned long megs = PAGES_TO_MB(totalram_pages());
+ 
+ 	/* Use a smaller cluster for small-memory machines */
+@@ -1108,6 +1112,7 @@ void __init swap_setup(void)
+ 		page_cluster = 2;
+ 	else
+ 		page_cluster = 3;
++#endif /* CONFIG_CACHY */
+ 	/*
+ 	 * Right now other parts of the system means that we
+ 	 * _really_ don't want to cluster much more
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 2c66fbcd6e84..5c97679aa002 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -199,7 +199,11 @@ struct scan_control {
+ /*
+  * From 0 .. MAX_SWAPPINESS.  Higher means more swappy.
+  */
++#ifdef CONFIG_CACHY
++int vm_swappiness = 100;
++#else
+ int vm_swappiness = 60;
++#endif
+ 
+ static int sc_swappiness(struct scan_control *sc, struct mem_cgroup *memcg)
+ {

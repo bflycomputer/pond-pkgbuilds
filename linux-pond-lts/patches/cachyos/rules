@@ -1,0 +1,77 @@
+# Export rules: unmatched commits are kept; 'keep' overrides exclusions.
+#
+#   drop-branch <name>   Exclude a topic branch.
+#   drop <glob>          Exclude matching commit subjects.
+#   keep <glob>          Retain matching commit subjects.
+#
+# This series is older than linux-pond's and is cut differently. It keeps only
+# changes that linux-pond also keeps, or that are identical to mainline.
+
+# Mac and T2 support.
+drop-branch t2
+
+# BBRv3.
+drop-branch bbr3
+
+# HDMI VRR and ALLM: an older series than the one linux-pond keeps; includes passive VRR.
+drop-branch hdmi
+
+# AES-GCM series: two commits differ from mainline and the others depend on them.
+drop-branch crypto
+
+# ROG Ally gamepad driver and ASUS changes that are not in mainline.
+drop hid-asus-ally: *
+drop ?NOT-FOR-UPSTREAM? hid-asus-ally: *
+drop hid: add VID/PID for ASUS ROG RAIKIRI PRO
+drop platform/x86: asus-wmi: change quiet to low-power
+drop debug by default
+
+# ADIOS I/O scheduler.
+drop linux*-ADIOS-*
+drop iosched-*: bump ADIOS to *
+# Excluded in linux-pond.
+drop Cachy: Use BFQ as the elevator for SQ devices
+
+# VHBA virtual SCSI adapter (CDEmu).
+drop CACHY: Add VHBA driver
+
+# Intel remapped NVMe driver: added, reverted and added again.
+drop *PCI: Add Intel remapped NVMe device support*
+
+# GCC modulo scheduling: active here because this kernel is built with GCC.
+# It changes generated code and reschedules no loops on x86-64.
+drop Cachy: Add GCC SMS-based modulo scheduling
+drop CACHY: Remove redundant -fmodulo-sched flag
+
+# Not in linux-pond and not in mainline.
+drop le9uo *
+drop Cachy: mm: Disable unevictable compaction
+drop Cachy: drm/amdgpu/pm: Allow override of min_power_limit*
+drop locking: rwsem: spin faster
+drop CACHY: Add config for default of unprivileged_userns_clone
+drop Cachy: cpufreq: Remove schedutil dependency*
+drop Cachy: Initialize ata before graphics
+drop x86/CPU/AMD: Gatekeep Zen5 RDSEED*
+drop hid-haptic: Fix building as a module
+
+# Mainline changes in a form that differs from the mainline commit.
+drop kbuild: move vmlinux.a build rule to scripts/Makefile.vmlinux_a
+drop kbuild: distributed build support for Clang ThinLTO
+drop x86/mm/tlb: Make enter_lazy_tlb() always inline on x86
+drop sched: Make raw_spin_rq_unlock() inline
+# Depends on the two inline changes above.
+drop sched/core: Make finish_task_switch() and its subfunctions always inline
+
+# Added and then reverted by CachyOS; exclude both sides.
+drop *x86/bhi: Add BHB clearing for CPUs with larger branch history*
+drop *x86/vmscape: *
+drop *spi: cs42l43: Use actual ACPI firmware node for chip selects*
+
+# Duplicate: stable's install-extmod-build has packaged the tool since 6.18.21
+drop kbuild: add resolve_btfids to pacman PKGBUILD
+
+# Duplicate: stable has carried the same three device entries since 6.18.19.
+drop usb: core: add USB_QUIRK_NO_BOS for additional capture devices
+
+# CachyOS release tooling; unused by Pond builds.
+drop tag-release*

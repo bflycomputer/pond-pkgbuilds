@@ -22,6 +22,16 @@ drop fixup! iosched-*: update ADIOS to *
 # Depends on the excluded ADIOS changes.
 drop CACHY: Use BFQ for SQ devices and mq-deadline for MQ devices
 
+# Loop-scheduling compiler flags: Clang ignores the GCC flag, and the LLVM
+# flag repeats a default. The LLVM commit also adds an x86-only guard that
+# is always true here.
+drop kbuild: Add GCC SMS-based modulo scheduling
+drop Kbuild: Enable LLVM machine pipeliner
+
+# Duplicate: mainline's install-extmod-build has packaged the tool since 7.2,
+# and this recipe copies it itself.
+drop kbuild: add resolve_btfids to pacman PKGBUILD
+
 # VHBA virtual SCSI adapter (CDEmu).
 drop scsi: Add VHBA driver
 

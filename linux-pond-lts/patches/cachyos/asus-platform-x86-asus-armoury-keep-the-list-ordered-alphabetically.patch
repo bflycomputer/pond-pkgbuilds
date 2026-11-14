@@ -1,0 +1,63 @@
+From: Denis Benato <denis.benato@linux.dev>
+Date: Fri, 16 Jan 2026 19:06:36 +0100
+Subject: platform/x86: asus-armoury: keep the list ordered alphabetically
+CachyOS-Branch: asus
+
+# Model GA403WM appears after GA403WR breaking the alphabetical order:
+# swap theirs position.
+#
+# Fixes: f5fc40734b0f ("platform/x86: asus-armoury: add support for GA403WM")
+# Signed-off-by: Denis Benato <denis.benato@linux.dev>
+---
+diff --git a/drivers/platform/x86/asus-armoury.h b/drivers/platform/x86/asus-armoury.h
+index a79c7887bd41..6ab92ce151b7 100644
+--- a/drivers/platform/x86/asus-armoury.h
++++ b/drivers/platform/x86/asus-armoury.h
+@@ -957,7 +957,7 @@ static const struct dmi_system_id power_limits[] = {
+ 	},
+ 	{
+ 		.matches = {
+-			DMI_MATCH(DMI_BOARD_NAME, "GA403WR"),
++			DMI_MATCH(DMI_BOARD_NAME, "GA403WM"),
+ 		},
+ 		.driver_data = &(struct power_data) {
+ 			.ac_data = &(struct power_limits) {
+@@ -968,11 +968,11 @@ static const struct dmi_system_id power_limits[] = {
+ 				.ppt_pl3_fppt_min = 35,
+ 				.ppt_pl3_fppt_max = 80,
+ 				.nv_dynamic_boost_min = 0,
+-				.nv_dynamic_boost_max = 25,
++				.nv_dynamic_boost_max = 15,
+ 				.nv_temp_target_min = 75,
+ 				.nv_temp_target_max = 87,
+-				.nv_tgp_min = 80,
+-				.nv_tgp_max = 95,
++				.nv_tgp_min = 55,
++				.nv_tgp_max = 85,
+ 			},
+ 			.dc_data = &(struct power_limits) {
+ 				.ppt_pl1_spl_min = 15,
+@@ -989,7 +989,7 @@ static const struct dmi_system_id power_limits[] = {
+ 	},
+ 	{
+ 		.matches = {
+-			DMI_MATCH(DMI_BOARD_NAME, "GA403WM"),
++			DMI_MATCH(DMI_BOARD_NAME, "GA403WR"),
+ 		},
+ 		.driver_data = &(struct power_data) {
+ 			.ac_data = &(struct power_limits) {
+@@ -1000,11 +1000,11 @@ static const struct dmi_system_id power_limits[] = {
+ 				.ppt_pl3_fppt_min = 35,
+ 				.ppt_pl3_fppt_max = 80,
+ 				.nv_dynamic_boost_min = 0,
+-				.nv_dynamic_boost_max = 15,
++				.nv_dynamic_boost_max = 25,
+ 				.nv_temp_target_min = 75,
+ 				.nv_temp_target_max = 87,
+-				.nv_tgp_min = 55,
+-				.nv_tgp_max = 85,
++				.nv_tgp_min = 80,
++				.nv_tgp_max = 95,
+ 			},
+ 			.dc_data = &(struct power_limits) {
+ 				.ppt_pl1_spl_min = 15,

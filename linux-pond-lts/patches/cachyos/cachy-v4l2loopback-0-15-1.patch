@@ -1,0 +1,221 @@
+From: Eric Naim <dnaim@cachyos.org>
+Date: Mon, 9 Jun 2025 12:11:50 +0700
+Subject: v4l2loopback: 0.15.1
+CachyOS-Branch: cachy
+
+# Signed-off-by: Eric Naim <dnaim@cachyos.org>
+---
+diff --git a/drivers/media/v4l2-core/v4l2loopback.c b/drivers/media/v4l2-core/v4l2loopback.c
+index 5c8b70981afa..3be7c4abc1e7 100644
+--- a/drivers/media/v4l2-core/v4l2loopback.c
++++ b/drivers/media/v4l2-core/v4l2loopback.c
+@@ -23,6 +23,7 @@
+ #include <linux/slab.h>
+ #include <linux/fs.h>
+ #include <linux/capability.h>
++#include <linux/timer.h>
+ #include <linux/eventpoll.h>
+ #include <media/v4l2-ioctl.h>
+ #include <media/v4l2-common.h>
+@@ -33,6 +34,10 @@
+ #include <linux/miscdevice.h>
+ #include "v4l2loopback.h"
+ 
++#define V4L2LOOPBACK_CTL_ADD_legacy 0x4C80
++#define V4L2LOOPBACK_CTL_REMOVE_legacy 0x4C81
++#define V4L2LOOPBACK_CTL_QUERY_legacy 0x4C82
++
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 0, 0)
+ #error This module is not supported on kernels before 4.0.0.
+ #endif
+@@ -41,7 +46,7 @@
+ #define strscpy strlcpy
+ #endif
+ 
+-#if defined(timer_setup) && defined(from_timer)
++#if defined(timer_setup)
+ #define HAVE_TIMER_SETUP
+ #endif
+ 
+@@ -49,6 +54,10 @@
+ #define VFL_TYPE_VIDEO VFL_TYPE_GRABBER
+ #endif
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 2, 0)
++#define timer_delete_sync del_timer_sync
++#endif
++
+ #define V4L2LOOPBACK_VERSION_CODE                                              \
+ 	KERNEL_VERSION(V4L2LOOPBACK_VERSION_MAJOR, V4L2LOOPBACK_VERSION_MINOR, \
+ 		       V4L2LOOPBACK_VERSION_BUGFIX)
+@@ -2661,7 +2670,8 @@ static void check_timers(struct v4l2_loopback_device *dev)
+ #ifdef HAVE_TIMER_SETUP
+ static void sustain_timer_clb(struct timer_list *t)
+ {
+-	struct v4l2_loopback_device *dev = from_timer(dev, t, sustain_timer);
++	struct v4l2_loopback_device *dev =
++		container_of(t, struct v4l2_loopback_device, sustain_timer);
+ #else
+ static void sustain_timer_clb(unsigned long nr)
+ {
+@@ -2686,7 +2696,8 @@ static void sustain_timer_clb(unsigned long nr)
+ #ifdef HAVE_TIMER_SETUP
+ static void timeout_timer_clb(struct timer_list *t)
+ {
+-	struct v4l2_loopback_device *dev = from_timer(dev, t, timeout_timer);
++	struct v4l2_loopback_device *dev =
++		container_of(t, struct v4l2_loopback_device, timeout_timer);
+ #else
+ static void timeout_timer_clb(unsigned long nr)
+ {
+@@ -2972,6 +2983,7 @@ static long v4l2loopback_control_ioctl(struct file *file, unsigned int cmd,
+ 	struct v4l2_loopback_config *confptr = &conf;
+ 	int device_nr, capture_nr, output_nr;
+ 	int ret;
++	const __u32 version = V4L2LOOPBACK_VERSION_CODE;
+ 
+ 	ret = mutex_lock_killable(&v4l2loopback_ctl_mutex);
+ 	if (ret)
+@@ -2984,6 +2996,7 @@ static long v4l2loopback_control_ioctl(struct file *file, unsigned int cmd,
+ 		break;
+ 		/* add a v4l2loopback device (pair), based on the user-provided specs */
+ 	case V4L2LOOPBACK_CTL_ADD:
++	case V4L2LOOPBACK_CTL_ADD_legacy:
+ 		if (parm) {
+ 			if ((ret = copy_from_user(&conf, (void *)parm,
+ 						  sizeof(conf))) < 0)
+@@ -2996,7 +3009,8 @@ static long v4l2loopback_control_ioctl(struct file *file, unsigned int cmd,
+ 		break;
+ 		/* remove a v4l2loopback device (both capture and output) */
+ 	case V4L2LOOPBACK_CTL_REMOVE:
+-		ret = v4l2loopback_lookup((int)parm, &dev);
++	case V4L2LOOPBACK_CTL_REMOVE_legacy:
++		ret = v4l2loopback_lookup((__u32)parm, &dev);
+ 		if (ret >= 0 && dev) {
+ 			ret = -EBUSY;
+ 			if (dev->open_count.counter > 0)
+@@ -3009,6 +3023,7 @@ static long v4l2loopback_control_ioctl(struct file *file, unsigned int cmd,
+ 		 * this is mostly about limits (which cannot be queried directly with  VIDIOC_G_FMT and friends
+ 		 */
+ 	case V4L2LOOPBACK_CTL_QUERY:
++	case V4L2LOOPBACK_CTL_QUERY_legacy:
+ 		if (!parm)
+ 			break;
+ 		if ((ret = copy_from_user(&conf, (void *)parm, sizeof(conf))) <
+@@ -3061,6 +3076,15 @@ static long v4l2loopback_control_ioctl(struct file *file, unsigned int cmd,
+ 		}
+ 		ret = 0;
+ 		break;
++	case V4L2LOOPBACK_CTL_VERSION:
++		if (!parm)
++			break;
++		if (copy_to_user((void *)parm, &version, sizeof(version))) {
++			ret = -EFAULT;
++			break;
++		}
++		ret = 0;
++		break;
+ 	}
+ 
+ 	mutex_unlock(&v4l2loopback_ctl_mutex);
+diff --git a/drivers/media/v4l2-core/v4l2loopback.h b/drivers/media/v4l2-core/v4l2loopback.h
+index ec0be6cbe97d..e48e0ce5949d 100644
+--- a/drivers/media/v4l2-core/v4l2loopback.h
++++ b/drivers/media/v4l2-core/v4l2loopback.h
+@@ -11,7 +11,7 @@
+ #define _V4L2LOOPBACK_H
+ 
+ #define V4L2LOOPBACK_VERSION_MAJOR 0
+-#define V4L2LOOPBACK_VERSION_MINOR 14
++#define V4L2LOOPBACK_VERSION_MINOR 15
+ #define V4L2LOOPBACK_VERSION_BUGFIX 0
+ 
+ /* /dev/v4l2loopback interface */
+@@ -32,8 +32,8 @@ struct v4l2_loopback_config {
+          * or one (and only one) of them must be -1
+          *
+          */
+-	int output_nr;
+-	int unused; /*capture_nr;*/
++	__s32 output_nr;
++	__s32 unused; /*capture_nr;*/
+ 
+ 	/**
+          * a nice name for your device
+@@ -45,27 +45,27 @@ struct v4l2_loopback_config {
+          * allowed frame size
+          * if too low, default values are used
+          */
+-	unsigned int min_width;
+-	unsigned int max_width;
+-	unsigned int min_height;
+-	unsigned int max_height;
++	__u32 min_width;
++	__u32 max_width;
++	__u32 min_height;
++	__u32 max_height;
+ 
+ 	/**
+          * number of buffers to allocate for the queue
+          * if set to <=0, default values are used
+          */
+-	int max_buffers;
++	__s32 max_buffers;
+ 
+ 	/**
+          * how many consumers are allowed to open this device concurrently
+          * if set to <=0, default values are used
+          */
+-	int max_openers;
++	__s32 max_openers;
+ 
+ 	/**
+          * set the debugging level for this device
+          */
+-	int debug;
++	__s32 debug;
+ 
+ 	/**
+          * whether to announce OUTPUT/CAPTURE capabilities exclusively
+@@ -74,9 +74,17 @@ struct v4l2_loopback_config {
+ 	 * NOTE: this is going to be removed once separate output/capture
+ 	 *       devices are implemented
+          */
+-	int announce_all_caps;
++	__s32 announce_all_caps;
+ };
+ 
++#define V4L2LOOPBACK_CTL_IOCTLMAGIC '~'
++
++/* a pointer to an (unsigned int) that - on success - will hold
++ * the version code of the v4l2loopback module
++ * as returned by KERNEL_VERSION(MAJOR, MINOR, BUGFIX)
++ */
++#define V4L2LOOPBACK_CTL_VERSION _IOR(V4L2LOOPBACK_CTL_IOCTLMAGIC, 0, __u32)
++
+ /* a pointer to a (struct v4l2_loopback_config) that has all values you wish to impose on the
+  * to-be-created device set.
+  * if the ptr is NULL, a new device is created with default values at the driver's discretion.
+@@ -84,15 +92,17 @@ struct v4l2_loopback_config {
+  * returns the device_nr of the OUTPUT device (which can be used with V4L2LOOPBACK_CTL_QUERY,
+  * to get more information on the device)
+  */
+-#define V4L2LOOPBACK_CTL_ADD 0x4C80
++#define V4L2LOOPBACK_CTL_ADD \
++	_IOW(V4L2LOOPBACK_CTL_IOCTLMAGIC, 1, struct v4l2_loopback_config)
++
++/* the device-number (either CAPTURE or OUTPUT) associated with the loopback-device */
++#define V4L2LOOPBACK_CTL_REMOVE _IOW(V4L2LOOPBACK_CTL_IOCTLMAGIC, 2, __u32)
+ 
+ /* a pointer to a (struct v4l2_loopback_config) that has output_nr and/or capture_nr set
+  * (the two values must either refer to video-devices associated with the same loopback device
+  *  or exactly one of them must be <0
+  */
+-#define V4L2LOOPBACK_CTL_QUERY 0x4C82
+-
+-/* the device-number (either CAPTURE or OUTPUT) associated with the loopback-device */
+-#define V4L2LOOPBACK_CTL_REMOVE 0x4C81
++#define V4L2LOOPBACK_CTL_QUERY \
++	_IOWR(V4L2LOOPBACK_CTL_IOCTLMAGIC, 3, struct v4l2_loopback_config)
+ 
+ #endif /* _V4L2LOOPBACK_H */

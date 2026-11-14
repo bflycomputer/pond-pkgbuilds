@@ -1,0 +1,55 @@
+From: Denis Benato <denis.benato@linux.dev>
+Date: Sat, 3 Jan 2026 01:37:31 +0100
+Subject: platform/x86: asus-armoury: add support for GA403UV
+CachyOS-Branch: asus
+
+# Add TDP data for laptop model GA403UV.
+#
+# Signed-off-by: Denis Benato <denis.benato@linux.dev>
+# Link: https://patch.msgid.link/20260103003731.404383-4-denis.benato@linux.dev
+# Reviewed-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+# Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+---
+diff --git a/drivers/platform/x86/asus-armoury.h b/drivers/platform/x86/asus-armoury.h
+index edd37486f71f..bfa0d08ca7ee 100644
+--- a/drivers/platform/x86/asus-armoury.h
++++ b/drivers/platform/x86/asus-armoury.h
+@@ -873,6 +873,38 @@ static const struct dmi_system_id power_limits[] = {
+ 			.requires_fan_curve = true,
+ 		},
+ 	},
++	{
++		.matches = {
++			DMI_MATCH(DMI_BOARD_NAME, "GA403UV"),
++		},
++		.driver_data = &(struct power_data) {
++			.ac_data = &(struct power_limits) {
++				.ppt_pl1_spl_min = 15,
++				.ppt_pl1_spl_max = 80,
++				.ppt_pl2_sppt_min = 25,
++				.ppt_pl2_sppt_max = 80,
++				.ppt_pl3_fppt_min = 35,
++				.ppt_pl3_fppt_max = 80,
++				.nv_dynamic_boost_min = 5,
++				.nv_dynamic_boost_max = 25,
++				.nv_temp_target_min = 75,
++				.nv_temp_target_max = 87,
++				.nv_tgp_min = 55,
++				.nv_tgp_max = 65,
++			},
++			.dc_data = &(struct power_limits) {
++				.ppt_pl1_spl_min = 15,
++				.ppt_pl1_spl_max = 35,
++				.ppt_pl2_sppt_min = 25,
++				.ppt_pl2_sppt_max = 35,
++				.ppt_pl3_fppt_min = 35,
++				.ppt_pl3_fppt_max = 65,
++				.nv_temp_target_min = 75,
++				.nv_temp_target_max = 87,
++			},
++			.requires_fan_curve = true,
++		},
++	},
+ 	{
+ 		.matches = {
+ 			DMI_MATCH(DMI_BOARD_NAME, "GA403WR"),

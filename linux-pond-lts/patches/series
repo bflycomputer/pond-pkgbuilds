@@ -1,0 +1,5 @@
+# Apply after patches/cachyos/series.
+# Unmodified Debian patches: debian/patches/features/all/lockdown.
+efi-add-an-efi_secure_boot-flag-to-indicate-secure-b.patch
+efi-lock-down-the-kernel-if-booted-in-secure-boot-mo.patch
+mtd-disable-slram-and-phram-when-locked-down.patch

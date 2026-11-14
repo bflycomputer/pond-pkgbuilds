@@ -1,0 +1,55 @@
+From: Peter Jung <admin@ptr1337.dev>
+Date: Sun, 5 May 2024 10:49:42 +0200
+Subject: Cachy: intel-pstate: Implement "enable" parameter
+CachyOS-Branch: cachy
+
+# If intel-pstate is compiled into the kernel, it will preempt the loading
+# of acpi-cpufreq so you can take advantage of hardware p-states without
+# any friction.
+#
+# However, intel-pstate is not completely superior to cpufreq's ondemand
+# for one reason.  There's no concept of an up_threshold property.
+#
+# In ondemand, up_threshold essentially reduces the maximum utilization to
+# compare against, allowing you to hit max frequencies and turbo boost
+# from a much lower core utilization.
+#
+# With intel-pstate, you have the concept of minimum and maximum
+# performance, but no tunable that lets you define, maximum frequency
+# means 50% core utilization.  For just this oversight, there's reasons
+# you may want ondemand.
+#
+# Lets support setting "enable" in kernel boot parameters.  This lets
+# kernel maintainers include "intel_pstate=disable" statically in the
+# static boot parameters, but let users of the kernel override this
+# selection.
+#
+# Signed-off-by: Peter Jung <admin@ptr1337.dev>
+---
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index 47d39a733282..4a80554ad7ab 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -2402,6 +2402,9 @@
+ 			disable
+ 			  Do not enable intel_pstate as the default
+ 			  scaling driver for the supported processors
++			enable
++			  Enable intel_pstate in-case "disable" was passed
++			  previously in the kernel boot parameters
+                         active
+                           Use intel_pstate driver to bypass the scaling
+                           governors layer of cpufreq and provides it own
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 1de12358c0b9..b1b6a8964fd0 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -3955,6 +3955,8 @@ static int __init intel_pstate_setup(char *str)
+ 
+ 	if (!strcmp(str, "disable"))
+ 		no_load = 1;
++	else if (!strcmp(str, "enable"))
++		no_load = 0;
+ 	else if (!strcmp(str, "active"))
+ 		default_driver = &intel_pstate;
+ 	else if (!strcmp(str, "passive"))

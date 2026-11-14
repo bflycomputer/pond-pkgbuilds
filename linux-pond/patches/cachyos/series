@@ -17,7 +17,6 @@ cachy-mm-increase-vm-readahead-pages-to-256k.patch
 cachy-cachy-mm-vmscan-increase-vm-swappiness-to-100.patch
 cachy-cachy-sched-fair-tweak-eevdf-for-interactivity.patch
 cachy-kconfig-restore-config-optimize-for-performance-o3.patch
-cachy-kbuild-add-gcc-sms-based-modulo-scheduling.patch
 cachy-drivers-pci-add-acs-override-support.patch
 cachy-input-evdev-use-call-rcu-when-detaching-client.patch
 cachy-cachy-enable-background-reclaim-of-hugepages.patch
@@ -31,8 +30,6 @@ cachy-arch-x86-add-x86-64-isa-and-zen4-compiler-optimizations.patch
 cachy-cachy-disable-split-lock-mitigation-by-default.patch
 cachy-acpi-processor-disable-bus-master-check-for-amd.patch
 cachy-cachy-mm-lru-gen-protect-the-working-set-of-the-last-100-jiffies.patch
-cachy-kbuild-add-resolve-btfids-to-pacman-pkgbuild.patch
-cachy-kbuild-enable-llvm-machine-pipeliner.patch
 cachy-readdir-add-unlikely-hint-on-len-check.patch
 cachy-sched-core-add-some-branch-hints-based-on-gcov-analysis.patch
 cachy-list-mark-some-functions-as-always-inline.patch
