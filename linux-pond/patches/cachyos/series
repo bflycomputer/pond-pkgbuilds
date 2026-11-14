@@ -1,7 +1,6 @@
 amd-iommu-iommu-amd-do-not-request-acs-when-iommu-is-not-going-to-be-initi.patch
 amd-iommu-iommu-amd-disallow-implicit-start-state-ivrs-detected-transition.patch
 amd-iommu-iommu-amd-remove-ad-hoc-checks-that-are-never-true.patch
-amd-iommu-iommu-amd-force-identity-mode-for-selected-gpus-only.patch
 amd-iommu-iommu-amd-refactor-device-probe-and-capability-initialization.patch
 amd-iommu-iommu-amd-remove-iommu-ignore-device.patch
 amd-iommu-iommu-amd-fail-probe-on-ats-configuration-failure.patch
@@ -9,7 +8,6 @@ amd-iommu-iommu-amd-move-ga-log-allocation-to-init.patch
 amd-iommu-iommu-amd-fix-leak-of-data-entry-in-irq-remapping-alloc-error-pa.patch
 amd-iommu-iommu-amd-add-perfopt-iommu-performance-optimization-support.patch
 amd-iommu-drm-amdgpu-enable-perfopt-iommu-perf-optimization-when-gpu-in-id.patch
-amd-iommu-revert-iommu-amd-force-identity-mode-for-selected-gpus-only.patch
 cachy-add-sysctl-to-allow-disabling-unprivileged-clone-newuser.patch
 cachy-kconfig-add-config-cachy.patch
 cachy-kconfig-hz-add-additional-timer-frequency-options.patch
