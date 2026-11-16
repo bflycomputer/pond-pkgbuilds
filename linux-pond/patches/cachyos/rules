@@ -4,6 +4,9 @@
 #   drop <glob>          Exclude matching commit subjects.
 #   keep <glob>          Retain matching commit subjects.
 
+# Keep IOMMU groups consistent with hardware isolation; exclude the fixup too.
+drop *Add ACS override support
+
 # Mac and T2 support.
 drop-branch t2
 # Mainline backport: 6f88e6ebdc1a.

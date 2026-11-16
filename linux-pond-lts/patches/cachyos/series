@@ -31,7 +31,6 @@ asus-platform-x86-asus-wmi-fix-sending-oobe-at-probe.patch
 cachy-add-sysctl-to-allow-disabling-unprivileged-clone-newuser.patch
 cachy-cachy-tweaks.patch
 cachy-cachy-restore-o3-optimization-level.patch
-cachy-cachy-add-acs-override-support.patch
 cachy-cachy-migrate.patch
 cachy-cachy-evdev-use-call-rcu-when-detaching-client.patch
 cachy-cachy-enable-background-reclaim-of-hugepages.patch

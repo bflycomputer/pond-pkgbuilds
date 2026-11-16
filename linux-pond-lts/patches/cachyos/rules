@@ -7,6 +7,9 @@
 # This series is older than linux-pond's and is cut differently. It keeps only
 # changes that linux-pond also keeps, or that are identical to mainline.
 
+# Keep IOMMU groups consistent with hardware isolation; exclude fixups too.
+drop *Add ACS override support
+
 # Mac and T2 support.
 drop-branch t2
 

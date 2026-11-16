@@ -15,7 +15,6 @@ cachy-mm-increase-vm-readahead-pages-to-256k.patch
 cachy-cachy-mm-vmscan-increase-vm-swappiness-to-100.patch
 cachy-cachy-sched-fair-tweak-eevdf-for-interactivity.patch
 cachy-kconfig-restore-config-optimize-for-performance-o3.patch
-cachy-drivers-pci-add-acs-override-support.patch
 cachy-input-evdev-use-call-rcu-when-detaching-client.patch
 cachy-cachy-enable-background-reclaim-of-hugepages.patch
 cachy-cachy-disable-watermark-boosting-by-default.patch
@@ -33,7 +32,6 @@ cachy-sched-core-add-some-branch-hints-based-on-gcov-analysis.patch
 cachy-list-mark-some-functions-as-always-inline.patch
 cachy-mm-swap-state-disable-swap-in-readahead.patch
 cachy-rust-allow-btf-generation-with-rust-lto.patch
-cachy-fixup-drivers-pci-add-acs-override-support.patch
 fixes-x86-cpu-amd-don-t-clear-rdseed32-bit-on-znver5.patch
 fixes-drm-i915-rc6-disable-rc6-for-infinitybook-pro-gen8.patch
 fixes-drm-i915-rc6-add-another-boardname-to-disable-rc6-for-infinitybo.patch
