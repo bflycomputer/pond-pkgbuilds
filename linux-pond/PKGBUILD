@@ -180,7 +180,7 @@ _minor=4
 #_rcver=rc8
 pkgver=${_major}.${_minor}
 _tagrel=1
-pkgrel=1
+pkgrel=2
 _srcname=cachyos-${_major}.${_minor}-${_tagrel}
 pkgdesc='Linux kernel with the selected downstream scheduler and performance patch set for Pond.'
 _kernver="$pkgver-$pkgrel"
@@ -891,7 +891,7 @@ done
 
 b2sums=('9b75f615d0a03d6627d7e3db4397882d602161db13cd5efd6226e0e5c5f970d1baea676d9d01edd0f09ed0b7207b6421e6340f1b8e9bd4e8152491ddddcc9021'
         'SKIP'
-        '6cb0d0b6517eb2be80b590bb5315351779e652540c778b1e844d6f2e9f9a2965317673e52eb7e871469ed57a4384d0e54d350f3bf4e1d4dc28d9a92fb176a52f'
+        'b1598207ff0dae4e9ddd619a23ea1390ecfe27eed8c70f899af287cb7902b77a3d2cb32ba8d35f91e1810e2d875b4207cba5aa12f0b8a5b74874b255d90891bf'
         'c992567bd7dd8553432be496ffa1c17e2f5ebe9c7edb51945cf977e1b742dd6517c210d8843bb82744ca705efd07f8027cd7dde41b50215ebd707a34aa81462e'
         'b0bb5f8a23765c73fb59febe23bf649fc10ad0cfc822ed8bcae0578915711ec24123bdca7d0c132a8196d679d350353cfad13d15b21dd9cf315c3cd074809646'
         '43386fb36a975bd5215d477bd2e11d91adbdc20393b9898788ee5734834aaeb6af83e8e493a0d20f6bd7fd6ecbff124f7877ede44c3beafb007b9c7effa44fe6'
