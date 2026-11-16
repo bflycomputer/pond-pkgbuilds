@@ -211,6 +211,7 @@ makedepends=(
   zstd
 )
 
+# Copies of the patches the build downloads are in patches/pkgbuild
 _patchsource="https://raw.githubusercontent.com/cachyos/kernel-patches/master/${_major}"
 _nv_ver=620.70.06
 _nv_pkg="NVIDIA-Linux-x86_64-${_nv_ver}"
