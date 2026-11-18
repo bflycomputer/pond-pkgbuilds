@@ -1,10 +1,30 @@
 #!/bin/sh
 
+_update_esp() {
+  local efi=/boot/efi/EFI new=/usr/lib/grub/x86_64-efi/monolithic/grubx64.efi uuid path
+  [ -f $efi/pond/grubx64.efi ] || return 1
+
+  # Migration: grub-mkstandalone loaders had this config built in.
+  if [ ! -s $efi/pond/grub.cfg ]; then
+    uuid=$(grub-probe --target=fs_uuid /boot/grub) && path=$(grub-mkrelpath /boot/grub) || return 1
+    printf 'search --no-floppy --fs-uuid --set=root %s\nconfigfile ($root)%s/grub.cfg\n' "$uuid" "$path" > $efi/pond/grub.cfg
+  fi
+  
+  # BOOTX64.EFI may belong to another system: update it only if it is our copy.
+  cmp -s $efi/pond/grubx64.efi $efi/BOOT/BOOTX64.EFI && cp $new $efi/BOOT/BOOTX64.EFI
+  cp $new $efi/pond/grubx64.efi
+}
+
 post_upgrade() {
   # We used to package /boot/grub/grub.cfg, but there is no reason to.
   # Remove the file from package, but move real file back in place.
   if [ ! -f /boot/grub/grub.cfg -a -f /boot/grub/grub.cfg.pacsave ]; then
     mv /boot/grub/grub.cfg.pacsave /boot/grub/grub.cfg
+  fi
+
+  if _update_esp; then
+    echo ':: Updated GRUB on the EFI system partition.'
+    return
   fi
 
   # Give a hint to update installation and configuration one after another.

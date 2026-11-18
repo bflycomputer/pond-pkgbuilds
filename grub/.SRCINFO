@@ -1,7 +1,7 @@
 pkgbase = grub
 	pkgdesc = GNU GRand Unified Bootloader (2)
 	pkgver = 2.16
-	pkgrel = 1
+	pkgrel = 2
 	epoch = 2
 	url = https://gnu-grub.freedesktop.org/
 	install = grub.install
