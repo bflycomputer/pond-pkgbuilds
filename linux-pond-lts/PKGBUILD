@@ -145,12 +145,12 @@ _pkgsuffix="pond-lts"
 
 pkgbase="linux-$_pkgsuffix"
 _major=6.18
-_minor=60
+_minor=64
 #_minorc=$((_minor+1))
 #_rcver=rc8
 pkgver=${_major}.${_minor}
 _tagrel=1
-pkgrel=3
+pkgrel=1
 _stable=${_major}.${_minor}
 #_stable=${_major}
 #_stablerc=${_major}-${_rcver}
@@ -824,7 +824,7 @@ for _p in "${pkgname[@]}"; do
     }"
 done
 
-b2sums=('46c65f2c9607e2d90250dd35223385455d98a262719c3b12bd55d256e15d4debf7c065d728c84800ffa6699b3ce45ce9d52a2d5cc739cbaea42ee4fd58bbbb7b'
+b2sums=('2c9130c8a2f57384556517159efbf843771298943d52abfac7cd3bf5524b10213f0972c9cdc5cfc11028300c06e7afc4ba1a84495119316d286e4c5e0f87e652'
         'SKIP'
         '3fc6db2b7e863e2b3e458121273c93ac91f792e3b30bc90ec2ee4b45af5a20f8d5ecfe2636daab53465fe58b09b92a799679a7b46ca4f8396f9da9c3da3b8404'
         '390d1761b0ac3db00db8c8de4fa249aded45f67dcd7ff55d995910862fc968761bedae1f9f0191471c4cbc6bbae76b371c99847c4bbf8789a50fce8e56f49d5a')
