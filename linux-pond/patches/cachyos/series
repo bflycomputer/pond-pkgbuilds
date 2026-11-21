@@ -6,7 +6,6 @@ amd-iommu-iommu-amd-remove-iommu-ignore-device.patch
 amd-iommu-iommu-amd-fail-probe-on-ats-configuration-failure.patch
 amd-iommu-iommu-amd-move-ga-log-allocation-to-init.patch
 amd-iommu-iommu-amd-fix-leak-of-data-entry-in-irq-remapping-alloc-error-pa.patch
-amd-iommu-iommu-amd-add-perfopt-iommu-performance-optimization-support.patch
 amd-iommu-drm-amdgpu-enable-perfopt-iommu-perf-optimization-when-gpu-in-id.patch
 cachy-add-sysctl-to-allow-disabling-unprivileged-clone-newuser.patch
 cachy-kconfig-add-config-cachy.patch
@@ -49,7 +48,6 @@ fixes-drm-i915-dp-on-dpcd-init-wake-the-dprx-for-edp.patch
 fixes-hid-logitech-hidpp-read-g920-force-feedback-config-before-hid-co.patch
 fixes-usb-pci-quirks-always-assert-xhci-os-ownership.patch
 fixes-apparmor-convert-duplicated-dfa-transitions-to-match-char.patch
-fixes-wifi-brcmfmac-map-msgbuf-rx-packet-ids-bidirectional.patch
 hdmi-drm-amd-display-add-2-1-freesync-support-for-amd-vsdb-edid-block.patch
 hdmi-drm-edid-parse-hdmi-2-1-gaming-allm-vrr-capabilities-from-hf-vsd.patch
 hdmi-drm-amd-display-add-hdmi-2-1-vrr-support-from-hf-vsdb.patch
@@ -64,3 +62,4 @@ vesa-dsc-bpp-drm-amdgpu-dsc-fix-max-qp-limits-to-match-vesa-dsc-1-1-spec.patch
 zram-zram-remove-unreachable-kernel-read-file-from-path-return-check.patch
 zram-zram-convert-to-sg-list-zsmalloc-object-read-api.patch
 zram-zram-fix-short-reads-from-block-state.patch
+cachy-kbuild-rust-support-stabilized-flag-cprofile-sample-use-for-rust.patch
