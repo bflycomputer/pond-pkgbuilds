@@ -6,7 +6,7 @@
 
 pkgbase=nvidia-utils
 pkgname=('nvidia-utils' 'opencl-nvidia' 'nvidia-open-dkms')
-pkgver=620.70.06
+pkgver=620.73.04
 pkgrel=1
 arch=('x86_64')
 url="http://www.nvidia.com/"
@@ -36,8 +36,8 @@ sha256sums=('be99ff3def641bb900c2486cce96530394c5dc60548fc4642f19d3a4c784134d'
             '1d053c5078387021338cfc3a732bed61be1a20a549775573788e9134775c8149'
             'aa3106f169f1640a9f73af1e7bf5346800eecb030078b646a860d4994d0e0992'
             'd9251519fcd5570525b04dbea40278abbe16b35eb958c8f5cf251dacb6b52ed7'
-            '29118e3abd08c07559bcca3d9c76238d039490af0362a2e5bcfcbe7204afd4b1'
-            'd65c8bbea3abebc64f83119e4fb7ecb6601fc43d718dbecbec8e3758a246355e'
+            'b5f2e2d5da8435b32539304015b89bf7eb22fe0aec8cd6905b7a6e8a9f9b8f1b'
+            '3a107b31b22d6f5c8da34e5e22a66e38ccdb7a92ee23266d0e064d3b9635c93f'
             'b14f7a65359c05c373ddfc750cd4cf086a48e815489d93ad5cbe1dbf84bf8f5a'
             '6264d279bbae8eae6554ed78dd6e562da00cf71ffa5601ce5208099a98cd2c4d'
             'dcbce21a16a008a7371014220cff1153ad9893b8d095b2024066275d4c953bee'
