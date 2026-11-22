@@ -369,9 +369,10 @@ sync_package() {
   if [[ -n "$pr_number" ]]; then
     gh pr edit "$pr_number" \
       --title "$pond_path: sync CachyOS updates" \
-      --body-file "$body_file" || { rm -f "$body_file"; return 1; }
+      --body-file "$body_file" &&
+      gh pr ready "$pr_number" ${sync_review:+--undo} || { rm -f "$body_file"; return 1; }
   else
-    gh pr create \
+    gh pr create ${sync_review:+--draft} \
       --base "$branch" \
       --head "$branch_name" \
       --title "$pond_path: sync CachyOS updates" \
