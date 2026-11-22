@@ -1,7 +1,7 @@
 # Maintainer: Ammar Hossain <ammar@butterfly.so>
 
 pkgname=pond-lockscreen
-pkgver=0.2.1
+pkgver=0.2.2
 pkgrel=1
 pkgdesc='Pond session lock and SDDM greeter'
 arch=('x86_64')
@@ -15,7 +15,7 @@ depends=(
   'networkmanager-qt'
   'pond-wallpaper'
   'qt6-base'
-  'qt6-declarative>=6.11'
+  'qt6-declarative>=6.12'
   'qt6-svg'
   'qt6-wayland'
   'quickshell>=0.3.1'
@@ -27,9 +27,9 @@ depends=(
 )
 makedepends=('cmake' 'ninja')
 
-_commit=5d6fc5c8df6b15a79fd3905f65402fdaeaee9cf0
+_commit=7825829b44dea6a6a0fba1c3d1c5440bec1e00ed
 source=("pond-interface-$_commit.tar.gz::$url/archive/$_commit.tar.gz")
-sha256sums=('3c6df2a3293fabfbe450179083c098db66b87995170388540b6b23ddcd3f93a5')
+sha256sums=('8c0cf0dc82af912b8707b96086c47d13e7a30ed6fca04245edecb41e92efdaef')
 
 build() {
   cmake -S "pond-interface-$_commit" -B build -G Ninja \
