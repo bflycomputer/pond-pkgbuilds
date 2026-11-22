@@ -50,4 +50,3 @@ fixes-drm-i915-rc6-add-another-boardname-to-disable-rc6-for-infinitybo.patch
 fixes-sched-fair-drop-useless-cpumask-empty-in-find-energy-efficient-c.patch
 fixes-sched-fair-simplify-task-numa-find-cpu.patch
 fixes-bluetooth-btusb-add-vid-pid-13d3-3625.patch
-fixes-cpufreq-amd-pstate-skip-auto-sel-write-when-it-already-matches-t.patch
