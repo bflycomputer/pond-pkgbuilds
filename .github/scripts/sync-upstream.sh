@@ -322,6 +322,12 @@ sync_package() {
   )" || return 1
   git fetch --no-tags origin \
     "+refs/heads/$branch_name:refs/remotes/origin/$branch_name" 2>/dev/null || true
+  # A commit the bot did not author means someone is resolving this sync by hand.
+  if git log --format=%ae "origin/$branch..origin/$branch_name" 2>/dev/null |
+    grep -qvxF "$(git config user.email)"; then
+    printf '%s has manual commits on %s; leaving it for review.\n' "$pond_path" "$branch_name"
+    return 0
+  fi
   git checkout --quiet -B "$branch_name" "origin/$branch" || return 1
 
   mapfile -t upstream_commits < <(
