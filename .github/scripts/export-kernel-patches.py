@@ -258,16 +258,24 @@ def main():
             if state == 'upstream':
                 report['Already in the plain kernel (left out)'].append(label)
                 continue
-            if state == 'conflict':
-                report['NEEDS ATTENTION: does not apply'].append('%s (%s)' % (label, ', '.join(files)))
-                continue
-            if b'GIT binary patch' in diff:
-                report['NEEDS ATTENTION: binary change, which `patch` cannot apply'].append(label)
             stem = '%s-%s' % (slug(entry['branch'], 20), slug(entry['subject'], 64))
             name, count = stem + '.patch', 1
             while name in used:
                 count += 1
                 name = '%s-%d.patch' % (stem, count)
+            if state == 'conflict':
+                # CachyOS resolves these inside merge commits, which are not exported.
+                # The committed patch stays: reused if it applies, else left for a person to fix.
+                if name in old_diffs:
+                    used.add(name)
+                    names.append(name)
+                    if repo.run('apply', '--cached', '--whitespace=nowarn', data=old_diffs[name]).returncode == 0:
+                        report["Kept the committed patch (CachyOS's commit does not apply as written)"].append(label)
+                        continue
+                report['NEEDS ATTENTION: does not apply'].append('%s (%s)' % (label, ', '.join(files)))
+                continue
+            if b'GIT binary patch' in diff:
+                report['NEEDS ATTENTION: binary change, which `patch` cannot apply'].append(label)
             used.add(name)
             names.append(name)
             if state == 'adjusted':
