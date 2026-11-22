@@ -177,10 +177,10 @@ index d82a7a091473..de6db5621194 100644
  	amd_iommu_enable_interrupts();
  }
 diff --git a/drivers/iommu/amd/iommu.c b/drivers/iommu/amd/iommu.c
-index 08a354bc8e1b..598534b8f66f 100644
+index 23b926dd733e..a1e80edeb158 100644
 --- a/drivers/iommu/amd/iommu.c
 +++ b/drivers/iommu/amd/iommu.c
-@@ -2370,6 +2370,9 @@ static int attach_device(struct device *dev,
+@@ -2374,6 +2374,9 @@ static int attach_device(struct device *dev,
  	if (ret)
  		goto out;
  
@@ -190,7 +190,7 @@ index 08a354bc8e1b..598534b8f66f 100644
  	/* Setup GCR3 table */
  	if (pdom_is_sva_capable(domain)) {
  		ret = init_gcr3_table(dev_data, domain);
-@@ -2394,6 +2397,7 @@ static int attach_device(struct device *dev,
+@@ -2398,6 +2401,7 @@ static int attach_device(struct device *dev,
  		pdev_enable_cap_ats(pdev);
  	}
  
@@ -198,7 +198,7 @@ index 08a354bc8e1b..598534b8f66f 100644
  	/* Update data structures */
  	dev_data->domain = domain;
  	spin_lock_irqsave(&domain->lock, flags);
-@@ -2508,6 +2512,192 @@ static int iommu_init_device_caps(struct iommu_dev_data *dev_data,
+@@ -2512,6 +2516,192 @@ static int iommu_init_device_caps(struct iommu_dev_data *dev_data,
  	return 0;
  }
  
@@ -391,10 +391,13 @@ index 08a354bc8e1b..598534b8f66f 100644
  static struct iommu_device *amd_iommu_probe_device(struct device *dev)
  {
  	struct iommu_device *iommu_dev;
-@@ -2551,6 +2741,14 @@ static struct iommu_device *amd_iommu_probe_device(struct device *dev)
- static void amd_iommu_release_device(struct device *dev)
- {
- 	struct iommu_dev_data *dev_data = dev_iommu_priv_get(dev);
+@@ -2552,6 +2742,24 @@ static struct iommu_device *amd_iommu_probe_device(struct device *dev)
+ 	return iommu_dev;
+ }
+ 
++static void amd_iommu_release_device(struct device *dev)
++{
++	struct iommu_dev_data *dev_data = dev_iommu_priv_get(dev);
 +	struct amd_iommu *iommu = get_amd_iommu_from_dev_data(dev_data);
 +
 +	if (dev_data->perfopt) {
@@ -403,10 +406,17 @@ index 08a354bc8e1b..598534b8f66f 100644
 +				iommu->index);
 +		dev_data->perfopt = false;
 +	}
- 
- 	WARN_ON(dev_data->domain);
- 
-@@ -2925,6 +3123,19 @@ static int blocked_domain_attach_device(struct iommu_domain *domain,
++
++	/*
++	 * We keep dev_data around for unplugged devices and reuse it when the
++	 * device is re-plugged - not doing so would introduce a ton of races.
++	 */
++}
++
+ static struct iommu_group *amd_iommu_device_group(struct device *dev)
+ {
+ 	if (dev_is_pci(dev))
+@@ -2917,6 +3125,19 @@ static int blocked_domain_attach_device(struct iommu_domain *domain,
  					struct iommu_domain *old)
  {
  	struct iommu_dev_data *dev_data = dev_iommu_priv_get(dev);
@@ -426,7 +436,7 @@ index 08a354bc8e1b..598534b8f66f 100644
  
  	if (dev_data->domain)
  		detach_device(dev);
-@@ -2993,6 +3204,9 @@ static int amd_iommu_attach_device(struct iommu_domain *dom, struct device *dev,
+@@ -2985,6 +3206,9 @@ static int amd_iommu_attach_device(struct iommu_domain *dom, struct device *dev,
  	struct amd_iommu *iommu = get_amd_iommu_from_dev(dev);
  	int ret;
  
@@ -436,6 +446,14 @@ index 08a354bc8e1b..598534b8f66f 100644
  	/*
  	 * Skip attach device to domain if new domain is same as
  	 * devices current domain
+@@ -3197,6 +3421,7 @@ const struct iommu_ops amd_iommu_ops = {
+ 	.domain_alloc_paging_flags = amd_iommu_domain_alloc_paging_flags,
+ 	.domain_alloc_sva = amd_iommu_domain_alloc_sva,
+ 	.probe_device = amd_iommu_probe_device,
++	.release_device = amd_iommu_release_device,
+ 	.device_group = amd_iommu_device_group,
+ 	.get_resv_regions = amd_iommu_get_resv_regions,
+ 	.is_attach_deferred = amd_iommu_is_attach_deferred,
 diff --git a/include/linux/amd-iommu.h b/include/linux/amd-iommu.h
 index edcee9f5335a..104817e8d897 100644
 --- a/include/linux/amd-iommu.h
