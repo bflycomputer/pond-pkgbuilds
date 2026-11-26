@@ -5,10 +5,10 @@ CachyOS-Branch: fixes
 
 # Signed-off-by: Eric Naim <dnaim@cachyos.org>
 ---
-diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+diff --git a/drivers/bluetooth/btusb_main.c b/drivers/bluetooth/btusb_main.c
 index 4f6b425dd74d..109013b43956 100644
---- a/drivers/bluetooth/btusb.c
-+++ b/drivers/bluetooth/btusb.c
+--- a/drivers/bluetooth/btusb_main.c
++++ b/drivers/bluetooth/btusb_main.c
 @@ -719,6 +719,8 @@ static const struct usb_device_id quirks_table[] = {
  	{ USB_DEVICE(0x13d3, 0x3596), .driver_info = BTUSB_MEDIATEK |
  						     BTUSB_WIDEBAND_SPEECH },

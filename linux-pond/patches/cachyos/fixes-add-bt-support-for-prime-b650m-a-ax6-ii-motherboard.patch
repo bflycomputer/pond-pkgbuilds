@@ -5,10 +5,10 @@ CachyOS-Branch: fixes
 
 # By default BT starts up but doesn't show any devices when you try to pair. Adding the device id in block list, fixes that.
 ---
-diff --git a/drivers/bluetooth/btusb.c b/drivers/bluetooth/btusb.c
+diff --git a/drivers/bluetooth/btusb_main.c b/drivers/bluetooth/btusb_main.c
 index ece1fd426f12..4f6b425dd74d 100644
---- a/drivers/bluetooth/btusb.c
-+++ b/drivers/bluetooth/btusb.c
+--- a/drivers/bluetooth/btusb_main.c
++++ b/drivers/bluetooth/btusb_main.c
 @@ -587,6 +587,8 @@ static const struct usb_device_id quirks_table[] = {
  						     BTUSB_WIDEBAND_SPEECH },
  	{ USB_DEVICE(0x13d3, 0x3612), .driver_info = BTUSB_REALTEK |
