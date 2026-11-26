@@ -1,8 +1,0 @@
---- a/src/window/IWaylandWindow.cpp
-+++ b/src/window/IWaylandWindow.cpp
-@@ -56,3 +56,5 @@
- void IWaylandWindow::configure(const Vector2D& size, uint32_t serial) {
-+    if (size.x < 1 || size.y < 1)
-+        return;
- 
-     m_waylandState.logicalSize  = size;
