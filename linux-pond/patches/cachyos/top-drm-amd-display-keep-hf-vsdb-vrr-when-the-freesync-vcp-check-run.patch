@@ -1,0 +1,63 @@
+From: Peter Jung <admin@ptr1337.dev>
+Date: Thu, 26 Nov 2026 06:53:54 +0100
+Subject: drm/amd/display: Keep HF-VSDB VRR when the FreeSync VCP check runs
+CachyOS-Branch: top
+
+# The restored FreeSync VCP code check clears freesync_capable for any
+# SIGNAL_TYPE_HDMI_TYPE_A sink without an EDID FreeSync VCP code. It runs
+# after the HDMI 2.1 HF-VSDB fallback, so sinks that advertise VRR only in
+# the HDMI Forum VSDB (no AMD VSDB, hence no VCP code) lose the capability
+# the fallback just granted. vrr_capable and passive_vrr_capable end up 0
+# even though the VRR range is parsed correctly.
+#
+# This hits HDMI 2.1 TVs (e.g. LG OLED, Samsung QN90C) on 7.3.6, where the
+# check was backported to stable.
+#
+# Track whether the HF-VSDB fallback granted VRR and skip the VCP clear for
+# that HDMI case only. Sinks with an AMD VSDB and PCON sinks keep the
+# existing behaviour.
+#
+# Fixes: e4dca268eea6 ("drm/amd/display: Restore FreeSync VCP code check for HDMI/PCON sinks")
+# Link: https://github.com/CachyOS/distribution/issues/647
+# Signed-off-by: Peter Jung <admin@ptr1337.dev>
+---
+diff --git a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_connector.c b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_connector.c
+index 53076f3f42ae..ac359f49c79b 100644
+--- a/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_connector.c
++++ b/drivers/gpu/drm/amd/display/amdgpu_dm/amdgpu_dm_connector.c
+@@ -3867,6 +3867,7 @@ void amdgpu_dm_update_freesync_caps(struct drm_connector *connector,
+ 	struct amdgpu_hdmi_vsdb_info vsdb_info = {0};
+ 	const struct edid *edid;
+ 	bool freesync_capable = false;
++	bool hf_vsdb_vrr = false;
+ 	enum adaptive_sync_type as_type = ADAPTIVE_SYNC_TYPE_NONE;
+ 
+ 	if (!connector->state) {
+@@ -3992,8 +3993,10 @@ void amdgpu_dm_update_freesync_caps(struct drm_connector *connector,
+ 				}
+ 
+ 				if (amdgpu_dm_connector->max_vfreq -
+-				    amdgpu_dm_connector->min_vfreq > 10)
++				    amdgpu_dm_connector->min_vfreq > 10) {
+ 					freesync_capable = true;
++					hf_vsdb_vrr = true;
++				}
+ 
+ 				connector->display_info.monitor_range.min_vfreq =
+ 					amdgpu_dm_connector->min_vfreq;
+@@ -4039,8 +4042,13 @@ void amdgpu_dm_update_freesync_caps(struct drm_connector *connector,
+ 			amdgpu_dm_connector->min_vfreq;
+ 	}
+ 
+-	/* HDMI/PCON without an EDID FreeSync VCP code is not FreeSync-capable. */
+-	if ((sink->sink_signal == SIGNAL_TYPE_HDMI_TYPE_A ||
++	/*
++	 * HDMI/PCON without an EDID FreeSync VCP code is not FreeSync-capable,
++	 * unless the HDMI sink got its VRR range from the HDMI 2.1 HF-VSDB.
++	 * Such sinks typically lack an AMD VSDB and therefore have no
++	 * FreeSync VCP code.
++	 */
++	if (((sink->sink_signal == SIGNAL_TYPE_HDMI_TYPE_A && !hf_vsdb_vrr) ||
+ 	     as_type == FREESYNC_TYPE_PCON_IN_WHITELIST) &&
+ 	    !sink->edid_caps.freesync_vcp_code)
+ 		freesync_capable = false;

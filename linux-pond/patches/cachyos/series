@@ -61,3 +61,4 @@ t2-wifi-brcmfmac-improve-d3-substate-entering-timeout-handling.patch
 vesa-dsc-bpp-drm-amdgpu-dsc-fix-max-qp-limits-to-match-vesa-dsc-1-1-spec.patch
 zram-zram-remove-unreachable-kernel-read-file-from-path-return-check.patch
 zram-zram-convert-to-sg-list-zsmalloc-object-read-api.patch
+top-drm-amd-display-keep-hf-vsdb-vrr-when-the-freesync-vcp-check-run.patch
